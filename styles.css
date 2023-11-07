@@ -109,29 +109,21 @@ aside p {
   border: 2px solid #1c1c1c;
 }
 
-.piece__red {
-  background: url("./assets/piece-red.svg") no-repeat center;
-}
-
-.piece__white {
-  background: url("./assets/piece-white.svg") no-repeat center;
-}
-
-.king__red {
-  background: url("./assets/piece-red-king.svg") no-repeat center;
-}
-
-.king__white {
-  background: url("./assets/piece-white-king.svg") no-repeat center;
-}
-
-.cell,
-.king__red,
-.king__white,
-.piece__red,
-.piece__white {
-  width: 70px;
-  height: 70px;
-  display: inline-block;
+/* Board state */
+[data-state] {
   background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+[data-state="1"] {
+  background-image: url("./assets/piece-white.svg");
+}
+[data-state="2"] {
+  background-image: url("./assets/piece-red.svg");
+}
+[data-state="3"] {
+  background-image: url("./assets/piece-white-king.svg");
+}
+[data-state="4"] {
+  background-image: url("./assets/piece-red-king.svg");
 }
