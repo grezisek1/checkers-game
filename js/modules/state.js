@@ -9,8 +9,7 @@ export const stateValues = {
 export class State {
     initState() {
         this.data = new Uint8Array(50); // half of total is usable
-        this.score = new Float64Array(2);
+        this.score = new Uint8Array(2);
         this.isPlayer1Turn = null;
-        console.log("State initialized");
     }
 }

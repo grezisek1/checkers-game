@@ -5,6 +5,5 @@ export class Board {
       const square = document.createElement("div");
       board.appendChild(square);
     }
-    console.log("Board initialized");
   }
 }

@@ -4,9 +4,11 @@ html {
 }
 
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
+}
+
+body, h1, h2, p {
+  margin: 0;
 }
 
 main {
@@ -17,7 +19,7 @@ main {
   justify-content: space-between;
 }
 
-aside h1 {
+h1 {
   color: #1c1c1c;
   font-family:
     Unica One,
@@ -29,7 +31,7 @@ aside h1 {
   margin-bottom: 20px;
 }
 
-aside p {
+h2, p {
   color: #1c1c1c;
   font-family:
     Unica One,
@@ -126,4 +128,30 @@ aside p {
 }
 [data-state="4"] {
   background-image: url("./assets/piece-red-king.svg");
+}
+
+/* game over modal */
+#winner {
+  place-items: center;
+  gap: 20px;
+  padding: 45px 20px;
+  background: #f6f6f6;
+  border-radius: 13px;
+  min-width: min(350px, 90vw);
+  place-content: center;
+  max-width: unset;
+  max-height: unset;
+  border: unset;
+  outline: unset;
+
+  &[open] {
+    display: grid;
+  }
+
+  &::backdrop {
+    background: #1c1c1c7f;
+  }
+
+  & div {
+  }
 }
