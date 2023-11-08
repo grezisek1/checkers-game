@@ -9,6 +9,6 @@ export class Game {
   init() {
     this.board.initBoard();
     this.state.initState();
-    this.controller.startGame(this);
+    this.controller.initController(this);
   }
 }
