@@ -3,20 +3,20 @@ import { Board } from "./modules/board.js";
 import { State, stateValues } from "./modules/state.js";
 import { UI } from "./modules/ui.js";
 import { Controller } from "./modules/controller.js";
+import { Logic } from "./modules/logic.js";
 
 const game = new Game({
   board: new Board(),
   state: new State(),
   ui: new UI(),
+  logic: new Logic(),
   controller: new Controller(),
 });
 
 game.init();
 
 function testGameReset(winnerIndex) {
-  game.state.isPlayer1Turn = !Boolean(winnerIndex);
-  game.controller.updateTurn(game);
-
+  game.state.currentPlayerIndex = winnerIndex;
   const winnerPiece = winnerIndex ? stateValues.king2 : stateValues.king1;
   game.state.data[0] = winnerPiece;
   for (let i = 1; i < 50; i++) {
@@ -31,8 +31,9 @@ function testGameReset(winnerIndex) {
 
   game.state.score[0] = Math.floor(Math.random() * 5);
   game.state.score[1] = Math.floor(Math.random() * 5);
-  game.controller.updateScore(game);
-
+  
+  game.controller.updateUI(game);
+  
   game.controller.endGame(game);
 }
 

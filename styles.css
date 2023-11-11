@@ -68,47 +68,40 @@ h2, p {
 
 #board {
   display: grid;
-  grid-template-columns: repeat(10, 70px); /* Updated for 10 columns */
-  width: 732px; /* Updated width for 10 squares */
-  height: 732px; /* Updated height for 10 squares */
+  grid-template-columns: repeat(10, 70px);
+  aspect-ratio: 1;
   border: 16px solid #1c1c1c;
-}
-
-#board div {
-  width: 70px;
-  height: 70px;
-}
-
-/* Alternating pattern for odd rows */
-#board div:nth-child(odd):nth-child(-n + 10),
-#board div:nth-child(even):nth-child(n + 11):nth-child(-n + 20),
-#board div:nth-child(odd):nth-child(n + 21):nth-child(-n + 30),
-#board div:nth-child(even):nth-child(n + 31):nth-child(-n + 40),
-#board div:nth-child(odd):nth-child(n + 41):nth-child(-n + 50),
-#board div:nth-child(even):nth-child(n + 51):nth-child(-n + 60),
-#board div:nth-child(odd):nth-child(n + 61):nth-child(-n + 70),
-#board div:nth-child(even):nth-child(n + 71):nth-child(-n + 80),
-#board div:nth-child(odd):nth-child(n + 81):nth-child(-n + 90),
-#board div:nth-child(even):nth-child(n + 91):nth-child(-n + 100) {
   background-color: #e7c673;
+  background-image: linear-gradient(45deg, #e1ab1f 25%, transparent 25%),
+    linear-gradient(-45deg, #e1ab1f 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e1ab1f 75%),
+    linear-gradient(-45deg, transparent 75%, #e1ab1f 75%);
+  background-size: 140px 140px;
+  background-position: 0 0, 0 70px, 70px -70px, -70px 0px;
 }
 
-/* Alternating pattern for even rows */
-#board div:nth-child(even):nth-child(-n + 10),
-#board div:nth-child(odd):nth-child(n + 11):nth-child(-n + 20),
-#board div:nth-child(even):nth-child(n + 21):nth-child(-n + 30),
-#board div:nth-child(odd):nth-child(n + 31):nth-child(-n + 40),
-#board div:nth-child(even):nth-child(n + 41):nth-child(-n + 50),
-#board div:nth-child(odd):nth-child(n + 51):nth-child(-n + 60),
-#board div:nth-child(even):nth-child(n + 61):nth-child(-n + 70),
-#board div:nth-child(odd):nth-child(n + 71):nth-child(-n + 80),
-#board div:nth-child(even):nth-child(n + 81):nth-child(-n + 90),
-#board div:nth-child(odd):nth-child(n + 91):nth-child(-n + 100) {
-  background-color: #e1ab1f;
-}
-
-.active-field {
-  border: 2px solid #1c1c1c;
+.field {
+  border: unset;
+  background: unset;
+  &:focus-visible,
+  &.field--selected,
+  &.field--highlighted  {
+    outline-width: 2px;
+    outline-offset: -1px;
+  }
+  &:focus-visible {
+    outline: dotted #1c1c1c;
+  }
+  &.field--selected,
+  &.field--highlighted {
+    outline: solid #1c1c1c;
+  }
+  &.field--selected:focus-visible {
+    outline: dashed royalblue;
+  }
+  &.field--highlighted:focus-visible {
+    outline: double green;
+  }
 }
 
 /* Board state */
@@ -150,8 +143,5 @@ h2, p {
 
   &::backdrop {
     background: #1c1c1c7f;
-  }
-
-  & div {
   }
 }
