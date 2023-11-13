@@ -10,6 +10,7 @@ const kingMoveDirections = [
     -1, 1, "bl",
     1, 1, "br",
 ];
+const kingCandidateRows = [1, 8];
 
 export class Logic {
     initLogic(game) {
@@ -45,9 +46,9 @@ export class Logic {
 
     updateAnalysis(game) {
         if (game.state.currentPlayerIndex) {
-            this.#updatePlayer(game, player2Pieces, player1Pieces, this.#updateP2PieceMoves, 8);
+            this.#updatePlayer(game, player2Pieces, player1Pieces, this.#updateP2PieceMoves, kingCandidateRows[1]);
         } else {
-            this.#updatePlayer(game, player1Pieces, player2Pieces, this.#updateP1PieceMoves, 1);
+            this.#updatePlayer(game, player1Pieces, player2Pieces, this.#updateP1PieceMoves, kingCandidateRows[0]);
         }
     }
     #updatePlayer(game, playerPieces, enemyPieces, pieceMovesUpdater, kingCandidatesRow) {
