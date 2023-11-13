@@ -4,30 +4,30 @@ const noFields = [];
 
 export class Controller {
     initController(game) {
-        this.startGame(game);
+        this.#startGame(game);
         winner.addEventListener("click", () => {
             game.ui.hideWinner();
-            this.startGame(game);
+            this.#startGame(game);
         });
 
         board.addEventListener("click", clickEvent => {
-            this.clickField(game, clickEvent);
+            this.#clickField(game, clickEvent);
         }, true);
     }
 
-    startGame(game) {
-        this.resetState(game);
-        this.updateBoard(game);
-        this.updateUI(game);
-        this.updateLogic(game);
+    #startGame(game) {
+        this.#resetState(game);
+        this.#updateBoard(game);
+        this.#updateUI(game);
+        this.#updateLogic(game);
     }
 
-    endGame(game) {
+    #endGame(game) {
         game.ui.setWinner(game.state.currentPlayerIndex);
         game.ui.showWinner();
     }
 
-    resetState(game) {
+    #resetState(game) {
         new Uint8Array(game.state.data.buffer, 0, 15).fill(stateValues.piece2);
         new Uint8Array(game.state.data.buffer, 15, 20).fill(stateValues.empty);
         new Uint8Array(game.state.data.buffer, 35, 15).fill(stateValues.piece1);
@@ -38,7 +38,7 @@ export class Controller {
         new Uint8Array(game.state.data.buffer, 14, 1).fill(stateValues.king2);
     }
 
-    updateBoard(game) {
+    #updateBoard(game) {
         let ci = 0;
         let di = -1;
         for (let y = 0; y < 10; y++) {
@@ -53,16 +53,16 @@ export class Controller {
         }
     }
 
-    updateUI(game) {
+    #updateUI(game) {
         game.ui.setTurn(game.state.currentPlayerIndex);
         game.ui.setScore(game.state.score);
     }
 
-    updateLogic(game) {
+    #updateLogic(game) {
         game.logic.updateAnalysis(game);
     }
 
-    clickField(game, clickEvent) {
+    #clickField(game, clickEvent) {
         if (!game.logic.isFieldUsable(clickEvent.target)) {
             game.board.highlightFields(noFields);
             game.board.selectFields(noFields);
@@ -72,7 +72,7 @@ export class Controller {
         
         const ci = game.board.fields.indexOf(clickEvent.target);
         if (game.logic.isClickMovement(clickEvent)) {
-            this.movePiece(game, ci);
+            this.#movePiece(game, ci);
             return;
         }
 
@@ -89,7 +89,7 @@ export class Controller {
         }
     }
 
-    movePiece(game, ci) {
+    #movePiece(game, ci) {
         const selectedDi = game.logic.ciToDi(game.state.selected);
         const di = game.logic.ciToDi(ci);
         game.state.data[di] = game.state.data[selectedDi];
@@ -104,9 +104,9 @@ export class Controller {
             }
         }
         
-        this.updateBoard(game);
-        this.updateUI(game);
-        this.updateLogic(game);
+        this.#updateBoard(game);
+        this.#updateUI(game);
+        this.#updateLogic(game);
         game.board.highlightFields(noFields);
         game.board.selectFields(noFields);
     }
