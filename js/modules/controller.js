@@ -33,6 +33,9 @@ export class Controller {
         new Uint8Array(game.state.data.buffer, 35, 15).fill(stateValues.piece1);
         game.state.score.fill(0);
         game.state.currentPlayerIndex = 0;
+
+        new Uint8Array(game.state.data.buffer, 35, 1).fill(stateValues.king1);
+        new Uint8Array(game.state.data.buffer, 14, 1).fill(stateValues.king2);
     }
 
     updateBoard(game) {
@@ -91,16 +94,20 @@ export class Controller {
         const di = game.logic.ciToDi(ci);
         game.state.data[di] = game.state.data[selectedDi];
         game.state.data[selectedDi] = stateValues.empty;
-        game.board.fields[ci].dataset.state = game.board.fields[game.state.selected].dataset.state;
-        game.board.fields[game.state.selected].dataset.state = stateValues.empty.toString();
         
         game.state.currentPlayerIndex = (game.state.currentPlayerIndex + 1) % 2;
         
+        if (!game.logic.isPieceKing(game.state.data[di])) {
+            if (game.logic.getKingCandidates(game).includes(game.state.selected)) {
+                game.state.data[di] = game.logic.getPieceAsKing(game.state.data[di]);
+                console.log(`player ${2 - game.state.currentPlayerIndex} has new king`);
+            }
+        }
+        
+        this.updateBoard(game);
         this.updateUI(game);
         this.updateLogic(game);
         game.board.highlightFields(noFields);
         game.board.selectFields(noFields);
-
-        console.log(`Player ${2 - game.state.currentPlayerIndex} moved`);
     }
 }
