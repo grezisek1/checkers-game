@@ -184,7 +184,11 @@ export class Logic {
         let ny = y - 1;
         this.updateNBHD(state.data, nbhd, x, y);
         while (nbhd.fl === stateValues.empty) {
-            movesWithoutTake.push(this.xyToCi(nx, ny));
+            try {
+                movesWithoutTake.push(this.xyToCi(nx, ny));
+            } catch (error) {
+                console.log(error, movesWithoutTake[12], nbhd)
+            }
             this.updateNBHD(state.data, nbhd, nx, ny);
             nx--;
             ny--;
@@ -213,7 +217,11 @@ export class Logic {
             while (nbhd.fr === stateValues.empty) {
                 nx++;
                 ny--;
-                movesWithTake.push(this.xyToCi(nx, ny));
+                try {
+                    movesWithTake.push(this.xyToCi(nx, ny));
+                } catch (error) {
+                    console.log(nx, ny, nbhd)
+                }
                 this.updateNBHD(state.data, nbhd, nx, ny);
             }
         }
@@ -276,6 +284,9 @@ export class Logic {
             } else {
                 nbhd.fr = null;
             }
+        } else {
+            nbhd.fl = null;
+            nbhd.fr = null;
         }
         if (y < 9) {
             if (x >= 1) {
@@ -288,6 +299,9 @@ export class Logic {
             } else {
                 nbhd.br = null;
             }
+        } else {
+            nbhd.bl = null;
+            nbhd.br = null;
         }
     }
 
