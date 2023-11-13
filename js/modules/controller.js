@@ -100,7 +100,6 @@ export class Controller {
         if (!game.logic.isPieceKing(game.state.data[di])) {
             if (game.logic.getKingCandidates(game).includes(game.state.selected)) {
                 game.state.data[di] = game.logic.getPieceAsKing(game.state.data[di]);
-                console.log(`player ${2 - game.state.currentPlayerIndex} has new king`);
             }
         }
         
