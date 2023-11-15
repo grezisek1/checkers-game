@@ -57,7 +57,7 @@ export class Logic {
             }
         }
 
-        return false;
+        return null;
     }
 
     updateAnalysis(game) {
