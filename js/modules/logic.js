@@ -49,6 +49,9 @@ export class Logic {
     isPieceKing(piece) {
         return kings.includes(piece);
     }
+    isGameOver(game) {
+        return game.state.score[game.state.currentPlayerIndex] == 15;
+    }
     getTaken(state, ci) {
         const fromDi = this.ciToDi(state.selected);
         for (let take of state.analysis.takes[fromDi]) {
@@ -112,7 +115,7 @@ export class Logic {
         } else if (player2Pieces.includes(nbhd.fl)) {
             this.#updateNBHD(state.data, _nbhd, x - 1, y - 1);
             if (_nbhd.fl === stateValues.empty) {
-                movesWithTake.push([
+                movesWithTake.push([// TODO: taking sometimes fails to remove the taken piece
                     this.xyToCi(x - 2, y - 2),
                     this.xyToDi(x - 1, y - 1)
                 ]);
@@ -123,7 +126,7 @@ export class Logic {
         } else if (player2Pieces.includes(nbhd.fr)) {
             this.#updateNBHD(state.data, _nbhd, x + 1, y - 1);
             if (_nbhd.fr === stateValues.empty) {
-                movesWithTake.push([
+                movesWithTake.push([// TODO: taking sometimes fails to remove the taken piece
                     this.xyToCi(x + 2, y - 2),
                     this.xyToDi(x + 1, y - 1)
                 ]);
@@ -133,7 +136,7 @@ export class Logic {
         if (player2Pieces.includes(nbhd.bl)) {
             this.#updateNBHD(state.data, _nbhd, x - 1, y + 1);
             if (_nbhd.bl === stateValues.empty) {
-                movesWithTake.push([
+                movesWithTake.push([// TODO: taking sometimes fails to remove the taken piece
                     this.xyToCi(x - 2, y + 2),
                     this.xyToDi(x - 1, y + 1)
                 ]);
@@ -142,7 +145,7 @@ export class Logic {
         if (player2Pieces.includes(nbhd.br)) {
             this.#updateNBHD(state.data, _nbhd, x + 1, y + 1);
             if (_nbhd.br === stateValues.empty) {
-                movesWithTake.push([
+                movesWithTake.push([// TODO: taking sometimes fails to remove the taken piece
                     this.xyToCi(x + 2, y + 2),
                     this.xyToDi(x + 1, y + 1)
                 ]);
@@ -175,7 +178,7 @@ export class Logic {
         } else if (player1Pieces.includes(nbhd.bl)) {
             this.#updateNBHD(state.data, _nbhd, x - 1, y + 1);
             if (_nbhd.bl === stateValues.empty) {
-                movesWithTake.push([
+                movesWithTake.push([// TODO: taking sometimes fails to remove the taken piece
                     this.xyToCi(x - 2, y + 2),
                     this.xyToDi(x - 1, y + 1)
                 ]);
@@ -188,7 +191,7 @@ export class Logic {
         } else if (player1Pieces.includes(nbhd.br)) {
             this.#updateNBHD(state.data, _nbhd, x + 1, y + 1);
             if (_nbhd.br === stateValues.empty) {
-                movesWithTake.push([
+                movesWithTake.push([// TODO: taking sometimes fails to remove the taken piece
                     this.xyToCi(x + 2, y + 2),
                     this.xyToDi(x + 1, y + 1)
                 ]);
@@ -198,7 +201,7 @@ export class Logic {
         if (player1Pieces.includes(nbhd.fl)) {
             this.#updateNBHD(state.data, _nbhd, x - 1, y - 1);
             if (_nbhd.fl === stateValues.empty) {
-                movesWithTake.push([
+                movesWithTake.push([// TODO: taking sometimes fails to remove the taken piece
                     this.xyToCi(x - 2, y - 2),
                     this.xyToDi(x - 1, y - 1)
                 ]);
@@ -207,7 +210,7 @@ export class Logic {
         if (player1Pieces.includes(nbhd.fr)) {
             this.#updateNBHD(state.data, _nbhd, x + 1, y - 1);
             if (_nbhd.bl === stateValues.empty) {
-                movesWithTake.push([
+                movesWithTake.push([// TODO: taking sometimes fails to remove the taken piece
                     this.xyToCi(x + 2, y - 2),
                     this.xyToDi(x + 1, y - 1)
                 ]);
@@ -272,6 +275,7 @@ export class Logic {
             while (nbhd[dirKey] === stateValues.empty) {
                 nx += dirX;
                 ny += dirY;
+                // TODO: taking sometimes fails to remove the taken piece
                 movesWithTake.push([this.xyToCi(nx, ny), takenDi]);
                 this.#updateNBHD(state.data, nbhd, nx, ny);
             }

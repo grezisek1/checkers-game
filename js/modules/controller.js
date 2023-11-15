@@ -75,9 +75,18 @@ export class Controller {
 
         if (game.logic.isClickMovement(clickEvent)) {
             const taken = game.logic.getTaken(game.state, ci);
+
+            // TODO: taking sometimes fails to remove the taken piece
+            if (taken && game.state.data[taken] == stateValues.empty) {
+                throw new Error("failed to remove the taken piece");
+            }
+
             if (taken) {
                 game.state.data[taken] = stateValues.empty;
                 game.state.score[game.state.currentPlayerIndex]++;
+                if (game.logic.isGameOver(game)) {
+                    this.#endGame(game);
+                }
             }
             this.#movePiece(game, di);
             return;
