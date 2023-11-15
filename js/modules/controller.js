@@ -71,12 +71,18 @@ export class Controller {
         }
         
         const ci = game.board.fields.indexOf(clickEvent.target);
+        const di = game.logic.ciToDi(ci);
+
         if (game.logic.isClickMovement(clickEvent)) {
-            this.#movePiece(game, ci);
+            const taken = game.logic.getTaken(game.state, ci);
+            if (taken) {
+                game.state.data[taken] = stateValues.empty;
+                game.state.score[game.state.currentPlayerIndex]++;
+            }
+            this.#movePiece(game, di);
             return;
         }
 
-        const di = game.logic.ciToDi(ci);
         const availableMoves = game.logic.getAvailableMoves(game, di);
         game.board.highlightFields(availableMoves);
 
@@ -89,9 +95,8 @@ export class Controller {
         }
     }
 
-    #movePiece(game, ci) {
+    #movePiece(game, di) {
         const selectedDi = game.logic.ciToDi(game.state.selected);
-        const di = game.logic.ciToDi(ci);
         game.state.data[di] = game.state.data[selectedDi];
         game.state.data[selectedDi] = stateValues.empty;
         

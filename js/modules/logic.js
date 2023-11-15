@@ -13,7 +13,13 @@ const kingMoveDirections = [
 const kingCandidateRows = [1, 8];
 
 export class Logic {
+    #takeStrategyClass = null;
+    #takeStrategy = null;
+    constructor(takeStrategyClass) {
+        this.#takeStrategyClass = takeStrategyClass;
+    }
     initLogic(game) {
+        this.#takeStrategy = new this.#takeStrategyClass(game);
         this.updateAnalysis(game);
     }
 
@@ -42,6 +48,16 @@ export class Logic {
     }
     isPieceKing(piece) {
         return kings.includes(piece);
+    }
+    getTaken(state, ci) {
+        const fromDi = this.ciToDi(state.selected);
+        for (let take of state.analysis.takes[fromDi]) {
+            if (take.root[0] === ci) {
+                return take.root[1];
+            }
+        }
+
+        return false;
     }
 
     updateAnalysis(game) {
@@ -96,7 +112,10 @@ export class Logic {
         } else if (player2Pieces.includes(nbhd.fl)) {
             this.#updateNBHD(state.data, _nbhd, x - 1, y - 1);
             if (_nbhd.fl === stateValues.empty) {
-                movesWithTake.push(this.xyToCi(x - 2, y - 2));
+                movesWithTake.push([
+                    this.xyToCi(x - 2, y - 2),
+                    this.xyToDi(x - 1, y - 1)
+                ]);
             }
         }
         if (nbhd.fr === stateValues.empty) {
@@ -104,25 +123,37 @@ export class Logic {
         } else if (player2Pieces.includes(nbhd.fr)) {
             this.#updateNBHD(state.data, _nbhd, x + 1, y - 1);
             if (_nbhd.fr === stateValues.empty) {
-                movesWithTake.push(this.xyToCi(x + 2, y - 2));
+                movesWithTake.push([
+                    this.xyToCi(x + 2, y - 2),
+                    this.xyToDi(x + 1, y - 1)
+                ]);
             }
         }
 
         if (player2Pieces.includes(nbhd.bl)) {
             this.#updateNBHD(state.data, _nbhd, x - 1, y + 1);
             if (_nbhd.bl === stateValues.empty) {
-                movesWithTake.push(this.xyToCi(x - 2, y + 2));
+                movesWithTake.push([
+                    this.xyToCi(x - 2, y + 2),
+                    this.xyToDi(x - 1, y + 1)
+                ]);
             }
         }
         if (player2Pieces.includes(nbhd.br)) {
             this.#updateNBHD(state.data, _nbhd, x + 1, y + 1);
             if (_nbhd.br === stateValues.empty) {
-                movesWithTake.push(this.xyToCi(x + 2, y + 2));
+                movesWithTake.push([
+                    this.xyToCi(x + 2, y + 2),
+                    this.xyToDi(x + 1, y + 1)
+                ]);
             }
         }
 
         if (movesWithTake.length) {
-
+            this.#takeStrategy.updateTakes(x, y, movesWithTake);
+            for (let take of movesWithTake) {
+                state.analysis.availableMoves[di].push(take[0]);
+            }
         } else {
             Array.prototype.push.apply(state.analysis.availableMoves[di], movesWithoutTake);
         }
@@ -144,7 +175,10 @@ export class Logic {
         } else if (player1Pieces.includes(nbhd.bl)) {
             this.#updateNBHD(state.data, _nbhd, x - 1, y + 1);
             if (_nbhd.bl === stateValues.empty) {
-                movesWithTake.push(this.xyToCi(x - 2, y + 2));
+                movesWithTake.push([
+                    this.xyToCi(x - 2, y + 2),
+                    this.xyToDi(x - 1, y + 1)
+                ]);
             }
         }
 
@@ -154,25 +188,37 @@ export class Logic {
         } else if (player1Pieces.includes(nbhd.br)) {
             this.#updateNBHD(state.data, _nbhd, x + 1, y + 1);
             if (_nbhd.br === stateValues.empty) {
-                movesWithTake.push(this.xyToCi(x + 2, y + 2));
+                movesWithTake.push([
+                    this.xyToCi(x + 2, y + 2),
+                    this.xyToDi(x + 1, y + 1)
+                ]);
             }
         }
 
         if (player1Pieces.includes(nbhd.fl)) {
             this.#updateNBHD(state.data, _nbhd, x - 1, y - 1);
             if (_nbhd.fl === stateValues.empty) {
-                movesWithTake.push(this.xyToCi(x - 2, y - 2));
+                movesWithTake.push([
+                    this.xyToCi(x - 2, y - 2),
+                    this.xyToDi(x - 1, y - 1)
+                ]);
             }
         }
         if (player1Pieces.includes(nbhd.fr)) {
             this.#updateNBHD(state.data, _nbhd, x + 1, y - 1);
             if (_nbhd.bl === stateValues.empty) {
-                movesWithTake.push(this.xyToCi(x + 2, y - 2));
+                movesWithTake.push([
+                    this.xyToCi(x + 2, y - 2),
+                    this.xyToDi(x + 1, y - 1)
+                ]);
             }
         }
 
         if (movesWithTake.length) {
-
+            this.#takeStrategy.updateTakes(x, y, movesWithTake);
+            for (let take of movesWithTake) {
+                state.analysis.availableMoves[di].push(take[0]);
+            }
         } else {
             Array.prototype.push.apply(state.analysis.availableMoves[di], movesWithoutTake);
         }
@@ -201,6 +247,10 @@ export class Logic {
         }
         
         if (movesWithTake.length) {
+            this.#takeStrategy.updateTakes(x, y, movesWithTake);
+            for (let take of movesWithTake) {
+                state.analysis.availableMoves[di].push(take[0]);
+            }
 
         } else {
             Array.prototype.push.apply(state.analysis.availableMoves[di], movesWithoutTake);
@@ -217,11 +267,12 @@ export class Logic {
             ny += dirY;
         }
         if (enemyPieces.includes(nbhd[dirKey])) {
+            const takenDi = this.xyToDi(nx, ny);
             this.#updateNBHD(state.data, nbhd, nx, ny);
             while (nbhd[dirKey] === stateValues.empty) {
                 nx += dirX;
                 ny += dirY;
-                movesWithTake.push(this.xyToCi(nx, ny));
+                movesWithTake.push([this.xyToCi(nx, ny), takenDi]);
                 this.#updateNBHD(state.data, nbhd, nx, ny);
             }
         }

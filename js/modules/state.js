@@ -14,7 +14,9 @@ export class State {
         this.selected = null;
         this.analysis = {
             availableMoves: new Array(50).fill(null).map(_=>[]),
+            availableTakes: new Array(50).fill(null).map(_=>[]),
             kingCandidates: [],
+            takes: new Array(50).fill(null).map(_=>[]),
         };
     }
 }
