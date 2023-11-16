@@ -49,6 +49,9 @@ export class Logic {
     isPieceKing(piece) {
         return kings.includes(piece);
     }
+    isGameOver(game) {
+        return game.state.score[game.state.currentPlayerIndex] == 15;
+    }
     getTaken(state, ci) {
         const fromDi = this.ciToDi(state.selected);
         for (let take of state.analysis.takes[fromDi]) {
@@ -79,6 +82,7 @@ export class Logic {
 
                 di++;
                 game.state.analysis.availableMoves[di].length = 0;
+                game.state.analysis.takes[di].length = 0;
 
                 if (!playerPieces.includes(game.state.data[di])) {
                     continue;
@@ -272,6 +276,7 @@ export class Logic {
             while (nbhd[dirKey] === stateValues.empty) {
                 nx += dirX;
                 ny += dirY;
+                
                 movesWithTake.push([this.xyToCi(nx, ny), takenDi]);
                 this.#updateNBHD(state.data, nbhd, nx, ny);
             }
