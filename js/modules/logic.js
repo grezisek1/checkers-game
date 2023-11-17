@@ -1,16 +1,13 @@
-import { fieldClasses } from "./fields.js";
-import { stateValues } from "./state.js";
+import {
+    fieldClasses,
+    stateValues,
+    player1Pieces,
+    player2Pieces,
+    kings,
+    kingMoveDirections,
+    kingCandidateRows
+} from "./constants.js";
 
-const player1Pieces = [stateValues.piece1, stateValues.king1];
-const player2Pieces = [stateValues.piece2, stateValues.king2];
-const kings = [stateValues.king1, stateValues.king2];
-const kingMoveDirections = [
-    -1, -1, "fl",
-    1, -1, "fr",
-    -1, 1, "bl",
-    1, 1, "br",
-];
-const kingCandidateRows = [1, 8];
 
 function updatePlayer(game, playerPieces, enemyPieces, pieceMovesUpdater, kingCandidatesRow, takeStrategy) {
     game.state.kingCandidates.length = 0;

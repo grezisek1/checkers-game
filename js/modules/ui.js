@@ -1,9 +1,4 @@
-const piecesImages = [
-    "./assets/piece-white.svg",
-    "./assets/piece-red.svg",
-    "./assets/piece-white-king.svg",
-    "./assets/piece-red-king.svg",
-];
+import { piecesImages } from "./constants.js";
 
 export default class UI {
     setTurn(playerIndex) {

@@ -1,4 +1,4 @@
-import { stateValues } from "./state.js";
+import { stateValues, boardNode } from "./constants.js";
 
 const noFields = [];
 
@@ -95,7 +95,7 @@ export default class Controller {
             startGame(game);
         });
 
-        game.fields.node.addEventListener("click", clickEvent => {
+        boardNode.addEventListener("click", clickEvent => {
             clickField(game, clickEvent);
         }, true);
     }
