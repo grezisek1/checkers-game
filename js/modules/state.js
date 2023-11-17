@@ -6,16 +6,14 @@ export const stateValues = {
     king2: 4,
 };
 
-export class State {
-    initState() {
-        this.data = new Uint8Array(50); // half of total is usable
+export default class State {
+    constructor() {
+        this.data = new Uint8Array(50);
         this.score = new Uint8Array(2);
         this.currentPlayerIndex = 0;
         this.selected = null;
-        this.analysis = {
-            availableMoves: new Array(50).fill(null).map(_=>[]),
-            kingCandidates: [],
-            takes: new Array(50).fill(null).map(_=>[]),
-        };
+        this.availableMoves = new Array(50).fill(null).map(_=>[]);
+        this.kingCandidates = [];
+        this.takes = new Array(50).fill(null).map(_=>[]);
     }
 }

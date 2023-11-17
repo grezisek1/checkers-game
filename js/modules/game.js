@@ -1,16 +1,11 @@
-export class Game {
-  constructor(modules) {
-    this.board = modules.board;
-    this.state = modules.state;
-    this.ui = modules.ui;
-    this.logic = modules.logic;
-    this.controller = modules.controller;
-  }
-
-  init() {
-    this.board.initBoard();
-    this.state.initState();
-    this.logic.initLogic(this);
-    this.controller.initController(this);
-  }
+export default class Game {
+    constructor(modules) {
+        this.fields = modules.fields;
+        this.state = modules.state;
+        this.ui = modules.ui;
+        this.logic = modules.logic;
+        this.controller = modules.controller;
+        this.controller.initController(this)
+        this.logic.initLogic(this);
+    }
 }

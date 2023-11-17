@@ -4,7 +4,7 @@ class TakeNode {
     }
 }
 
-export class SimplifiedTakeTree {
+export default class SimplifiedTakeTree {
     #game = null;
     constructor(game) {
         this.#game = game;
@@ -13,7 +13,7 @@ export class SimplifiedTakeTree {
     updateTakes(x, y, movesWithTakes) {
         const di = this.#game.logic.xyToDi(x, y);
         for (let take of movesWithTakes) {
-            this.#game.state.analysis.takes[di]
+            this.#game.state.takes[di]
                 .push(new TakeNode(take));
         }
     }

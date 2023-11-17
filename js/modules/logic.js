@@ -1,4 +1,4 @@
-import { boardClasses } from "./board.js";
+import { fieldClasses } from "./fields.js";
 import { stateValues } from "./state.js";
 
 const player1Pieces = [stateValues.piece1, stateValues.king1];
@@ -12,7 +12,262 @@ const kingMoveDirections = [
 ];
 const kingCandidateRows = [1, 8];
 
-export class Logic {
+function updatePlayer(game, playerPieces, enemyPieces, pieceMovesUpdater, kingCandidatesRow, takeStrategy) {
+    game.state.kingCandidates.length = 0;
+    let di = -1;
+    for (let y = 0; y < 10; y++) {
+        for (let x = 0; x < 10; x++) {
+            let ci = xyToCi(x, y);
+            if (!game.fields.list[ci].dataset.state) {
+                continue;
+            }
+
+            di++;
+            game.state.availableMoves[di].length = 0;
+            game.state.takes[di].length = 0;
+
+            if (!playerPieces.includes(game.state.data[di])) {
+                continue;
+            }
+
+            if (kings.includes(game.state.data[di])) {
+                updateKingMoves(game.state, x, y, di, enemyPieces, takeStrategy);
+            } else {
+                pieceMovesUpdater.call(this, game.state, x, y, di, takeStrategy);
+                if (y == kingCandidatesRow) {
+                    game.state.kingCandidates.push(ci);
+                }
+            }
+        }
+    }
+}
+function updateKingMoves(state, x, y, di, enemyPieces, takeStrategy) {
+    const nbhd = {
+        fl: null, fr: null,
+        bl: null, br: null,
+    };
+
+    const movesWithoutTake = [];
+    const movesWithTake = [];
+
+    for (let dir = 0; dir < 4 * 3; dir += 3) {
+        updateNBHD(state.data, nbhd, x, y);
+        updateKingMovesInDirection(
+            state, nbhd, x, y,
+            kingMoveDirections[dir],
+            kingMoveDirections[dir+1],
+            kingMoveDirections[dir+2],
+            enemyPieces,
+            movesWithoutTake,
+            movesWithTake
+        );
+    }
+    
+    if (movesWithTake.length) {
+        takeStrategy.updateTakes(x, y, movesWithTake);
+        for (let take of movesWithTake) {
+            state.availableMoves[di].push(take[0]);
+        }
+
+    } else {
+        Array.prototype.push.apply(state.availableMoves[di], movesWithoutTake);
+    }
+}
+function updateKingMovesInDirection(state, nbhd, x, y, dirX, dirY, dirKey, enemyPieces, movesWithoutTake, movesWithTake) {
+    let nx = x + dirX;
+    let ny = y + dirY;
+    updateNBHD(state.data, nbhd, x, y);
+    while (nbhd[dirKey] === stateValues.empty) {
+        movesWithoutTake.push(xyToCi(nx, ny));
+        updateNBHD(state.data, nbhd, nx, ny);
+        nx += dirX;
+        ny += dirY;
+    }
+    if (enemyPieces.includes(nbhd[dirKey])) {
+        const takenDi = xyToDi(nx, ny);
+        updateNBHD(state.data, nbhd, nx, ny);
+        while (nbhd[dirKey] === stateValues.empty) {
+            nx += dirX;
+            ny += dirY;
+            
+            movesWithTake.push([xyToCi(nx, ny), takenDi]);
+            updateNBHD(state.data, nbhd, nx, ny);
+        }
+    }
+}
+
+function updateNBHD(boardData, nbhd, x, y) {
+    if (y >= 1) {
+        if (x >= 1) {
+            nbhd.fl = boardData[xyToDi(x - 1, y - 1)];
+        } else {
+            nbhd.fl = null;
+        }
+        if (x < 9) {
+            nbhd.fr = boardData[xyToDi(x + 1, y - 1)];
+        } else {
+            nbhd.fr = null;
+        }
+    } else {
+        nbhd.fl = null;
+        nbhd.fr = null;
+    }
+    if (y < 9) {
+        if (x >= 1) {
+            nbhd.bl = boardData[xyToDi(x - 1, y + 1)];
+        } else {
+            nbhd.bl = null;
+        }
+        if (x < 9) {
+            nbhd.br = boardData[xyToDi(x + 1, y + 1)];
+        } else {
+            nbhd.br = null;
+        }
+    } else {
+        nbhd.bl = null;
+        nbhd.br = null;
+    }
+}
+
+function xyToCi(x, y) {
+    return y * 10 + x;
+}
+function ciToDi(ci) {
+    return Math.floor(ci / 2);
+}
+function xyToDi(x, y) {
+    return Math.floor(y * 5 + x / 2);
+}
+
+function updateP1PieceMoves(state, x, y, di, takeStrategy) {
+    const nbhd = {
+        fl: null, fr: null,
+        bl: null, br: null,
+    };
+    updateNBHD(state.data, nbhd, x, y);
+
+    const movesWithoutTake = [];
+    const movesWithTake = [];
+    
+    const _nbhd = Object.create(nbhd);
+    if (nbhd.fl === stateValues.empty) {
+        movesWithoutTake.push(xyToCi(x - 1, y - 1));
+    } else if (player2Pieces.includes(nbhd.fl)) {
+        updateNBHD(state.data, _nbhd, x - 1, y - 1);
+        if (_nbhd.fl === stateValues.empty) {
+            movesWithTake.push([
+                xyToCi(x - 2, y - 2),
+                xyToDi(x - 1, y - 1)
+            ]);
+        }
+    }
+    if (nbhd.fr === stateValues.empty) {
+        movesWithoutTake.push(xyToCi(x + 1, y - 1));
+    } else if (player2Pieces.includes(nbhd.fr)) {
+        updateNBHD(state.data, _nbhd, x + 1, y - 1);
+        if (_nbhd.fr === stateValues.empty) {
+            movesWithTake.push([
+                xyToCi(x + 2, y - 2),
+                xyToDi(x + 1, y - 1)
+            ]);
+        }
+    }
+
+    if (player2Pieces.includes(nbhd.bl)) {
+        updateNBHD(state.data, _nbhd, x - 1, y + 1);
+        if (_nbhd.bl === stateValues.empty) {
+            movesWithTake.push([
+                xyToCi(x - 2, y + 2),
+                xyToDi(x - 1, y + 1)
+            ]);
+        }
+    }
+    if (player2Pieces.includes(nbhd.br)) {
+        updateNBHD(state.data, _nbhd, x + 1, y + 1);
+        if (_nbhd.br === stateValues.empty) {
+            movesWithTake.push([
+                xyToCi(x + 2, y + 2),
+                xyToDi(x + 1, y + 1)
+            ]);
+        }
+    }
+
+    if (movesWithTake.length) {
+        takeStrategy.updateTakes(x, y, movesWithTake);
+        for (let take of movesWithTake) {
+            state.availableMoves[di].push(take[0]);
+        }
+    } else {
+        Array.prototype.push.apply(state.availableMoves[di], movesWithoutTake);
+    }
+}
+function updateP2PieceMoves(state, x, y, di, takeStrategy) {
+    const nbhd = {
+        fl: null, fr: null,
+        bl: null, br: null,
+    };
+    updateNBHD(state.data, nbhd, x, y);
+
+    const movesWithoutTake = [];
+    const movesWithTake = [];
+
+    const _nbhd = Object.create(nbhd);
+    if (nbhd.bl === stateValues.empty) {
+        movesWithoutTake.push(xyToCi(x - 1, y + 1));
+
+    } else if (player1Pieces.includes(nbhd.bl)) {
+        updateNBHD(state.data, _nbhd, x - 1, y + 1);
+        if (_nbhd.bl === stateValues.empty) {
+            movesWithTake.push([
+                xyToCi(x - 2, y + 2),
+                xyToDi(x - 1, y + 1)
+            ]);
+        }
+    }
+
+    if (nbhd.br === stateValues.empty) {
+        movesWithoutTake.push(xyToCi(x + 1, y + 1));
+            
+    } else if (player1Pieces.includes(nbhd.br)) {
+        updateNBHD(state.data, _nbhd, x + 1, y + 1);
+        if (_nbhd.br === stateValues.empty) {
+            movesWithTake.push([
+                xyToCi(x + 2, y + 2),
+                xyToDi(x + 1, y + 1)
+            ]);
+        }
+    }
+
+    if (player1Pieces.includes(nbhd.fl)) {
+        updateNBHD(state.data, _nbhd, x - 1, y - 1);
+        if (_nbhd.fl === stateValues.empty) {
+            movesWithTake.push([
+                xyToCi(x - 2, y - 2),
+                xyToDi(x - 1, y - 1)
+            ]);
+        }
+    }
+    if (player1Pieces.includes(nbhd.fr)) {
+        updateNBHD(state.data, _nbhd, x + 1, y - 1);
+        if (_nbhd.bl === stateValues.empty) {
+            movesWithTake.push([
+                this.xyToCi(x + 2, y - 2),
+                this.xyToDi(x + 1, y - 1)
+            ]);
+        }
+    }
+
+    if (movesWithTake.length) {
+        takeStrategy.updateTakes(x, y, movesWithTake);
+        for (let take of movesWithTake) {
+            state.availableMoves[di].push(take[0]);
+        }
+    } else {
+        Array.prototype.push.apply(state.availableMoves[di], movesWithoutTake);
+    }
+}
+
+export default class Logic {
     #takeStrategyClass = null;
     #takeStrategy = null;
     constructor(takeStrategyClass) {
@@ -24,10 +279,10 @@ export class Logic {
     }
 
     getAvailableMoves(game, di) {
-        return game.state.analysis.availableMoves[di];
+        return game.state.availableMoves[di];
     }
     getKingCandidates(game) {
-        return game.state.analysis.kingCandidates;
+        return game.state.kingCandidates;
     }
     getPieceAsKing(piece) {
         if (piece === stateValues.piece1) {
@@ -38,7 +293,7 @@ export class Logic {
     }
 
     isClickMovement(clickEvent) {
-        return clickEvent.target.classList.contains(boardClasses.highlighted);
+        return clickEvent.target.classList.contains(fieldClasses.highlighted);
     }
     isFieldUsable(fieldNode) {
         return Boolean(fieldNode.dataset.state);
@@ -54,7 +309,7 @@ export class Logic {
     }
     getTaken(state, ci) {
         const fromDi = this.ciToDi(state.selected);
-        for (let take of state.analysis.takes[fromDi]) {
+        for (let take of state.takes[fromDi]) {
             if (take.root[0] === ci) {
                 return take.root[1];
             }
@@ -62,267 +317,15 @@ export class Logic {
 
         return null;
     }
-
     updateAnalysis(game) {
         if (game.state.currentPlayerIndex) {
-            this.#updatePlayer(game, player2Pieces, player1Pieces, this.#updateP2PieceMoves, kingCandidateRows[1]);
+            updatePlayer(game, player2Pieces, player1Pieces, updateP2PieceMoves, kingCandidateRows[1], this.#takeStrategy);
         } else {
-            this.#updatePlayer(game, player1Pieces, player2Pieces, this.#updateP1PieceMoves, kingCandidateRows[0]);
-        }
-    }
-    #updatePlayer(game, playerPieces, enemyPieces, pieceMovesUpdater, kingCandidatesRow) {
-        game.state.analysis.kingCandidates.length = 0;
-        let di = -1;
-        for (let y = 0; y < 10; y++) {
-            for (let x = 0; x < 10; x++) {
-                let ci = this.xyToCi(x, y);
-                if (!game.board.fields[ci].dataset.state) {
-                    continue;
-                }
-
-                di++;
-                game.state.analysis.availableMoves[di].length = 0;
-                game.state.analysis.takes[di].length = 0;
-
-                if (!playerPieces.includes(game.state.data[di])) {
-                    continue;
-                }
-
-                if (kings.includes(game.state.data[di])) {
-                    this.#updateKingMoves(game.state, x, y, di, enemyPieces);
-                } else {
-                    pieceMovesUpdater.call(this, game.state, x, y, di);
-                    if (y == kingCandidatesRow) {
-                        game.state.analysis.kingCandidates.push(ci);
-                    }
-                }
-            }
+            updatePlayer(game, player1Pieces, player2Pieces, updateP1PieceMoves, kingCandidateRows[0], this.#takeStrategy);
         }
     }
 
-    #updateP1PieceMoves(state, x, y, di) {
-        const nbhd = {
-            fl: null, fr: null,
-            bl: null, br: null,
-        };
-        this.#updateNBHD(state.data, nbhd, x, y);
-
-        const movesWithoutTake = [];
-        const movesWithTake = [];
-        
-        const _nbhd = Object.create(nbhd);
-        if (nbhd.fl === stateValues.empty) {
-            movesWithoutTake.push(this.xyToCi(x - 1, y - 1));
-        } else if (player2Pieces.includes(nbhd.fl)) {
-            this.#updateNBHD(state.data, _nbhd, x - 1, y - 1);
-            if (_nbhd.fl === stateValues.empty) {
-                movesWithTake.push([
-                    this.xyToCi(x - 2, y - 2),
-                    this.xyToDi(x - 1, y - 1)
-                ]);
-            }
-        }
-        if (nbhd.fr === stateValues.empty) {
-            movesWithoutTake.push(this.xyToCi(x + 1, y - 1));
-        } else if (player2Pieces.includes(nbhd.fr)) {
-            this.#updateNBHD(state.data, _nbhd, x + 1, y - 1);
-            if (_nbhd.fr === stateValues.empty) {
-                movesWithTake.push([
-                    this.xyToCi(x + 2, y - 2),
-                    this.xyToDi(x + 1, y - 1)
-                ]);
-            }
-        }
-
-        if (player2Pieces.includes(nbhd.bl)) {
-            this.#updateNBHD(state.data, _nbhd, x - 1, y + 1);
-            if (_nbhd.bl === stateValues.empty) {
-                movesWithTake.push([
-                    this.xyToCi(x - 2, y + 2),
-                    this.xyToDi(x - 1, y + 1)
-                ]);
-            }
-        }
-        if (player2Pieces.includes(nbhd.br)) {
-            this.#updateNBHD(state.data, _nbhd, x + 1, y + 1);
-            if (_nbhd.br === stateValues.empty) {
-                movesWithTake.push([
-                    this.xyToCi(x + 2, y + 2),
-                    this.xyToDi(x + 1, y + 1)
-                ]);
-            }
-        }
-
-        if (movesWithTake.length) {
-            this.#takeStrategy.updateTakes(x, y, movesWithTake);
-            for (let take of movesWithTake) {
-                state.analysis.availableMoves[di].push(take[0]);
-            }
-        } else {
-            Array.prototype.push.apply(state.analysis.availableMoves[di], movesWithoutTake);
-        }
-    }
-    #updateP2PieceMoves(state, x, y, di) {
-        const nbhd = {
-            fl: null, fr: null,
-            bl: null, br: null,
-        };
-        this.#updateNBHD(state.data, nbhd, x, y);
-
-        const movesWithoutTake = [];
-        const movesWithTake = [];
-
-        const _nbhd = Object.create(nbhd);
-        if (nbhd.bl === stateValues.empty) {
-            movesWithoutTake.push(this.xyToCi(x - 1, y + 1));
-
-        } else if (player1Pieces.includes(nbhd.bl)) {
-            this.#updateNBHD(state.data, _nbhd, x - 1, y + 1);
-            if (_nbhd.bl === stateValues.empty) {
-                movesWithTake.push([
-                    this.xyToCi(x - 2, y + 2),
-                    this.xyToDi(x - 1, y + 1)
-                ]);
-            }
-        }
-
-        if (nbhd.br === stateValues.empty) {
-            movesWithoutTake.push(this.xyToCi(x + 1, y + 1));
-                
-        } else if (player1Pieces.includes(nbhd.br)) {
-            this.#updateNBHD(state.data, _nbhd, x + 1, y + 1);
-            if (_nbhd.br === stateValues.empty) {
-                movesWithTake.push([
-                    this.xyToCi(x + 2, y + 2),
-                    this.xyToDi(x + 1, y + 1)
-                ]);
-            }
-        }
-
-        if (player1Pieces.includes(nbhd.fl)) {
-            this.#updateNBHD(state.data, _nbhd, x - 1, y - 1);
-            if (_nbhd.fl === stateValues.empty) {
-                movesWithTake.push([
-                    this.xyToCi(x - 2, y - 2),
-                    this.xyToDi(x - 1, y - 1)
-                ]);
-            }
-        }
-        if (player1Pieces.includes(nbhd.fr)) {
-            this.#updateNBHD(state.data, _nbhd, x + 1, y - 1);
-            if (_nbhd.bl === stateValues.empty) {
-                movesWithTake.push([
-                    this.xyToCi(x + 2, y - 2),
-                    this.xyToDi(x + 1, y - 1)
-                ]);
-            }
-        }
-
-        if (movesWithTake.length) {
-            this.#takeStrategy.updateTakes(x, y, movesWithTake);
-            for (let take of movesWithTake) {
-                state.analysis.availableMoves[di].push(take[0]);
-            }
-        } else {
-            Array.prototype.push.apply(state.analysis.availableMoves[di], movesWithoutTake);
-        }
-    }
-
-    #updateKingMoves(state, x, y, di, enemyPieces) {
-        const nbhd = {
-            fl: null, fr: null,
-            bl: null, br: null,
-        };
-
-        const movesWithoutTake = [];
-        const movesWithTake = [];
-
-        for (let dir = 0; dir < 4 * 3; dir += 3) {
-            this.#updateNBHD(state.data, nbhd, x, y);
-            this.#updateKingMovesInDirection(
-                state, nbhd, x, y,
-                kingMoveDirections[dir],
-                kingMoveDirections[dir+1],
-                kingMoveDirections[dir+2],
-                enemyPieces,
-                movesWithoutTake,
-                movesWithTake
-            );
-        }
-        
-        if (movesWithTake.length) {
-            this.#takeStrategy.updateTakes(x, y, movesWithTake);
-            for (let take of movesWithTake) {
-                state.analysis.availableMoves[di].push(take[0]);
-            }
-
-        } else {
-            Array.prototype.push.apply(state.analysis.availableMoves[di], movesWithoutTake);
-        }
-    }
-    #updateKingMovesInDirection(state, nbhd, x, y, dirX, dirY, dirKey, enemyPieces, movesWithoutTake, movesWithTake) {
-        let nx = x + dirX;
-        let ny = y + dirY;
-        this.#updateNBHD(state.data, nbhd, x, y);
-        while (nbhd[dirKey] === stateValues.empty) {
-            movesWithoutTake.push(this.xyToCi(nx, ny));
-            this.#updateNBHD(state.data, nbhd, nx, ny);
-            nx += dirX;
-            ny += dirY;
-        }
-        if (enemyPieces.includes(nbhd[dirKey])) {
-            const takenDi = this.xyToDi(nx, ny);
-            this.#updateNBHD(state.data, nbhd, nx, ny);
-            while (nbhd[dirKey] === stateValues.empty) {
-                nx += dirX;
-                ny += dirY;
-                
-                movesWithTake.push([this.xyToCi(nx, ny), takenDi]);
-                this.#updateNBHD(state.data, nbhd, nx, ny);
-            }
-        }
-    }
-
-    #updateNBHD(boardData, nbhd, x, y) {
-        if (y >= 1) {
-            if (x >= 1) {
-                nbhd.fl = boardData[this.xyToDi(x - 1, y - 1)];
-            } else {
-                nbhd.fl = null;
-            }
-            if (x < 9) {
-                nbhd.fr = boardData[this.xyToDi(x + 1, y - 1)];
-            } else {
-                nbhd.fr = null;
-            }
-        } else {
-            nbhd.fl = null;
-            nbhd.fr = null;
-        }
-        if (y < 9) {
-            if (x >= 1) {
-                nbhd.bl = boardData[this.xyToDi(x - 1, y + 1)];
-            } else {
-                nbhd.bl = null;
-            }
-            if (x < 9) {
-                nbhd.br = boardData[this.xyToDi(x + 1, y + 1)];
-            } else {
-                nbhd.br = null;
-            }
-        } else {
-            nbhd.bl = null;
-            nbhd.br = null;
-        }
-    }
-
-    xyToCi(x, y) {
-        return y * 10 + x;
-    }
-    ciToDi(ci) {
-        return Math.floor(ci / 2);
-    }
-    xyToDi(x, y) {
-        return this.ciToDi(this.xyToCi(x, y));
-    }
+    xyToCi = xyToCi;
+    ciToDi = ciToDi;
+    xyToDi = xyToDi;
 }

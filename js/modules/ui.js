@@ -5,7 +5,7 @@ const piecesImages = [
     "./assets/piece-red-king.svg",
 ];
 
-export class UI {
+export default class UI {
     setTurn(playerIndex) {
         turn.src = piecesImages[playerIndex];
     }
