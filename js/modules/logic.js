@@ -5,15 +5,18 @@ import {
     player2Pieces,
     kings,
     kingMoveDirections,
-    kingCandidateRows
+    kingCandidateRows,
+    piecesCount,
+    fieldsCount
 } from "./constants.js";
 
 
 function updatePlayer(game, playerPieces, enemyPieces, pieceMovesUpdater, kingCandidatesRow, takeStrategy) {
     game.state.kingCandidates.length = 0;
     let di = -1;
-    for (let y = 0; y < 10; y++) {
-        for (let x = 0; x < 10; x++) {
+    const size = Math.sqrt(fieldsCount);
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
             let ci = xyToCi(x, y);
             if (!game.fields.list[ci].dataset.state) {
                 continue;
@@ -132,8 +135,13 @@ function xyToCi(x, y) {
 function ciToDi(ci) {
     return Math.floor(ci / 2);
 }
-function xyToDi(x, y) {
+export function xyToDi(x, y) {
     return Math.floor(y * 5 + x / 2);
+}
+export function diToXy(di) {
+    const y = Math.floor(di / 5);
+    const x = (di % 5) * 2 + (y + 1) % 2;
+    return [x, y];
 }
 
 function updateP1PieceMoves(state, x, y, di, takeStrategy) {
@@ -302,7 +310,7 @@ export default class Logic {
         return kings.includes(piece);
     }
     isGameOver(game) {
-        return game.state.score[game.state.currentPlayerIndex] == 15;
+        return game.state.score[game.state.currentPlayerIndex] == piecesCount;
     }
     getTaken(state, ci) {
         const fromDi = this.ciToDi(state.selected);

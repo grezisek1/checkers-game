@@ -1,6 +1,7 @@
 export default class Game {
     constructor(modules) {
         this.fields = modules.fields;
+        this.pieces = modules.pieces;
         this.state = modules.state;
         this.ui = modules.ui;
         this.logic = modules.logic;
