@@ -1,29 +1,26 @@
 import { fieldClasses } from "./constants.js";
+import { isXYUsable, xyToCi } from "./logic.js";
 
 let cancel = false;
 export default function autoplay(game, howManyGames, turnDelay) {
     const pickPiece = () => {
-        let pieceSet = [1, 3];
+        let color = "white";
         if (game.state.currentPlayerIndex) {
-            pieceSet[0] = 2;
-            pieceSet[1] = 4;
+            color = "black";
         }
 
         const moveablePieces = [];
-        const pieces = Array.from(document.querySelectorAll(`[data-state="${pieceSet[0]}"], [data-state="${pieceSet[1]}"]`));
-
         let di = -1;
         for (let y = 0; y < 10; y++) {
             for (let x = 0; x < 10; x++) {
-                let ci = game.logic.xyToCi(x, y);
-                if (!game.fields.list[ci].dataset.state) {
+                if (!isXYUsable(x, y)) {
                     continue;
                 }
                 di++;
 
-                if (pieces.includes(game.fields.list[ci])) {
+                if (game.pieces.data[di]?.dataset?.color == color) {
                     if (game.logic.getAvailableMoves(game, di).length) {
-                        moveablePieces.push(ci);
+                        moveablePieces.push(xyToCi(x, y));
                     }
                 }
             }
@@ -32,8 +29,8 @@ export default function autoplay(game, howManyGames, turnDelay) {
         return moveablePieces[Math.floor(Math.random() * moveablePieces.length)];
     };
 
-    const movePiece = (piece) => {
-        game.fields.list[piece].click();
+    const movePiece = (ci) => {
+        game.fields.list[ci].click();
         const moves = Array.from(document
             .querySelectorAll(`.${fieldClasses.highlighted}`));
 

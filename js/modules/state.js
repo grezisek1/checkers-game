@@ -2,7 +2,6 @@ import { dataCount } from "./constants.js";
 
 export default class State {
     constructor() {
-        this.data = new Uint8Array(dataCount);
         this.score = new Uint8Array(2);
         this.currentPlayerIndex = 0;
         this.selected = null;

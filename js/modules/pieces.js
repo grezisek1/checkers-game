@@ -1,11 +1,21 @@
-import { piecesCount, pieceNodeName, boardNode, xVar, yVar, dataCount, stateValues, piecesColors, piecesTypes } from "./constants.js";
+import {
+    boardNode,
+    pieceNodeName,
+    dataCount,
+    piecesCount,
+    xVar, yVar,
+    piecesTypes,
+    piecesColors,
+} from "./constants.js";
 import { diToXy } from "./logic.js";
 
 const attributeChangeHandlers = {
     "data-x": function(x) {
+        this.x = x;
         this.style.setProperty(xVar, x);
     },
     "data-y": function(y) {
+        this.y = y;
         this.style.setProperty(yVar, y);
     }
 };
@@ -32,7 +42,7 @@ class GamePiece extends HTMLElement {
 
 const xytemp = new Uint8Array(2);
 export default class Pieces {
-    #piecesDiLUT = new Array(dataCount).fill(null);
+    data = new Array(dataCount).fill(null);
     constructor() {
         this.pieces = [
             new Array(piecesCount),
@@ -43,12 +53,12 @@ export default class Pieces {
         for (let i = 0; i < piecesCount; i++) {
             di = i;
             this.pieces[1][i] = document.createElement(pieceNodeName);
-            this.#piecesDiLUT[di] = this.pieces[1][i];
+            this.data[di] = this.pieces[1][i];
             this.move(di, di);
             
             di = i + dataCount - piecesCount;
             this.pieces[0][i] = document.createElement(pieceNodeName);
-            this.#piecesDiLUT[di] = this.pieces[0][i];
+            this.data[di] = this.pieces[0][i];
             this.move(di, di);
         }
 
@@ -60,47 +70,36 @@ export default class Pieces {
     }
 
     move(from, to) {
-        if (this.#piecesDiLUT[from] === null) {
-            throw new Error("Trying to move the empty field");
-        }
-        if (this.#piecesDiLUT[to] !== null && from !== to) {
-            throw new Error("Trying to move into occupied field");
-        }
-
         xytemp.set(diToXy(to));
-        this.#piecesDiLUT[from].dataset.x = xytemp[0];
-        this.#piecesDiLUT[from].dataset.y = xytemp[1];
+        this.data[from].dataset.x = xytemp[0];
+        this.data[from].dataset.y = xytemp[1];
         if (from !== to) {
-            this.#piecesDiLUT[to] = this.#piecesDiLUT[from];
-            this.#piecesDiLUT[from] = null;
+            this.data[to] = this.data[from];
+            this.data[from] = null;
         }
     }
 
     take(from) {
-        if (this.#piecesDiLUT[from] === null) {
-            throw new Error("Trying to take the empty field");
-        }
-        
-        this.#piecesDiLUT[from].dataset.type = "taken";
-        this.#piecesDiLUT[from] = null;
+        this.data[from].dataset.type = piecesTypes[2];
+        this.data[from] = null;
     }
 
     promote(di) {
-        this.#piecesDiLUT[di].dataset.type = "king";
+        this.data[di].dataset.type = piecesTypes[1];
     }
 
     resetAll() {
         let di;
-        this.#piecesDiLUT.fill(null);
+        this.data.fill(null);
         for (let i = 0; i < piecesCount; i++) {
             di = i;
-            this.pieces[1][i].dataset.type = "piece";
-            this.#piecesDiLUT[di] = this.pieces[1][i];
+            this.pieces[1][i].dataset.type = piecesTypes[0];
+            this.data[di] = this.pieces[1][i];
             this.move(di, di);
 
             di = i + dataCount - piecesCount;
-            this.pieces[0][i].dataset.type = "piece";
-            this.#piecesDiLUT[di] = this.pieces[0][i];
+            this.pieces[0][i].dataset.type = piecesTypes[0];
+            this.data[di] = this.pieces[0][i];
             this.move(di, di);
         }
     }

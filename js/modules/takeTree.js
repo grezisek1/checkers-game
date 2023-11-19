@@ -1,3 +1,5 @@
+import { xyToDi } from "./logic.js";
+
 class TakeNode {
     constructor(take) {
         this.root = take;
@@ -11,7 +13,7 @@ export default class SimplifiedTakeTree {
     }
 
     updateTakes(x, y, movesWithTakes) {
-        const di = this.#game.logic.xyToDi(x, y);
+        const di = xyToDi(x, y);
         for (let take of movesWithTakes) {
             this.#game.state.takes[di]
                 .push(new TakeNode(take));
